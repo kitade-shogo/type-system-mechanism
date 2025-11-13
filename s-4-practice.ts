@@ -1,4 +1,4 @@
-import { error, parseBasic, typeShow } from "npm:tiny-ts-parser";
+import { error, parseBasic2, typeShow } from "npm:tiny-ts-parser";
 
 type Type =
   | { tag: "Boolean" }
@@ -14,8 +14,8 @@ type Term =
   | { tag: "var"; name: string }
   | { tag: "func"; params: Param[]; body: Term }
   | { tag: "call"; func: Term; args: Term[] }
-  | { tag: "seq"; body: Term; rest: Term }
-  | { tag: "const"; name: string; init: Term; rest: Term };
+  | { tag: "seq2"; body: Term[] }
+  | { tag: "const2"; name: string; init: Term; };
 
 type Param = { name: string; type: Type };
 
@@ -92,63 +92,17 @@ function typecheck(t: Term, tyEnv: TypeEnv): Type {
       }
       return funcTy.retType;
     }
-    case "seq": {
-      typecheck(t.body, tyEnv);
-      return typecheck(t.rest, tyEnv);
+    case "seq2": {
+　　　const [first, ...rest] = t.body;
+      typecheck(first, tyEnv);
+      return typecheck(rest, tyEnv);
     }
-    case "const": {
+    case "const2": {
       const ty = typecheck(t.init, tyEnv);
       const newTyEnv = { ...tyEnv, [t.name]: ty };
-      return typecheck(t.rest, newTyEnv);
+      return
     }
     default:
       error("not implemented", t);
   }
 }
-
-// console.log(
-//   typecheck(
-//     parseBasic(`
-//    const add = (x: number, y: number) => x + y;
-//    const select = (b:boolean, x:number, y:number) => b ? x : y;
-
-//    const x = add(1, add(2,3));
-//    const y = select(true, x, x);
-
-//    y;
-//   `),
-//     {}
-//   )
-// );
-
-// console.dir(
-//   typecheck(
-//     parseBasic(`
-//   (f: (x: number) => boolean) => f
-//   `),
-//     {}
-//   ),
-//   { depth: null }
-// );
-
-// console.log(
-//   typeShow(
-//     typecheck(
-//       parseBasic(`
-//   (f: (x: number) => boolean) => f
-//   `),
-//       {}
-//     )
-//   )
-// );
-
-console.log(
-  typecheck(
-    parseBasic(`
-  const f = () => x;
-  const x = 1;
-  f();
-  `),
-    {}
-  )
-);
