@@ -1,3 +1,7 @@
-import { parse } from "npm:tiny-ts-parser";
+import { parseRec } from "npm:tiny-ts-parser";
 
-console.log(parse("1 + 2"));
+console.log(parseRec(`
+  type X = { foo: X };
+
+  (arg: X) => 1;
+`));
